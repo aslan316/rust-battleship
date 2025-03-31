@@ -1,4 +1,8 @@
-struct BattleShip {
+pub mod client;
+pub mod server;
+
+#[derive(Clone)]
+pub struct BattleShip {
     turn: i32,
     a_winner: bool,
     num_hits: i32,
@@ -7,11 +11,28 @@ struct BattleShip {
     ships: Vec<i32>,
 }
 
-struct Coordinate {
+pub struct Coordinate {
     row_start: i32,
     row_end: i32,
     column_start: i32,
     column_end: i32,
+}
+
+impl Coordinate {
+    pub fn new(first_coord: &str, second_coord: &str) -> Self {
+        Coordinate {
+            row_start: letter_to_num(&first_coord[0..1]).unwrap(),
+            row_end: letter_to_num(&second_coord[0..1]).unwrap(),
+            column_start: first_coord[1..].parse().unwrap(),
+            column_end: second_coord[1..].parse().unwrap(),
+        }
+    }
+}
+
+impl Default for BattleShip {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl BattleShip {
@@ -28,9 +49,9 @@ impl BattleShip {
     }
 
     pub fn print_ship_board(&self) -> String {
-        let mut result = String::from("");
+        let mut result = String::from("  0 1 2 3 4 5 6 7 8 9\n");
         for i in 0..self.ship_board.len() {
-            result = format!("{result}{} ", Self::num_to_letter(&i).unwrap());
+            result = format!("{result}{} ", num_to_letter(&i).unwrap());
             for j in 0..self.ship_board[i].len() {
                 result = format!("{result}{} ", self.ship_board[i][j]);
             }
@@ -43,6 +64,24 @@ impl BattleShip {
             }
         }
         result = format!("{result}\n");
+
+        result
+    }
+
+    pub fn print_boards(&self) -> String {
+        let mut result = String::from("  0 1 2 3 4 5 6 7 8 9    0 1 2 3 4 5 6 7 8 9\n");
+        for i in 0..self.ship_board.len() {
+            result = format!("{result}{} ", num_to_letter(&i).unwrap());
+            for j in 0..self.ship_board[i].len() {
+                result = format!("{result}{} ", self.guess_board[i][j]);
+            }
+            result = format!("{result} ");
+            for k in 0..self.ship_board[i].len() {
+                result = format!("{result}{} ", self.ship_board[i][k]);
+            }
+            result = format!("{result} {}\n", num_to_letter(&i).unwrap());
+        }
+        result = format!("{result}X = hit\tO = miss           Your ships\n");
 
         result
     }
@@ -161,36 +200,36 @@ impl BattleShip {
     pub fn turn(&self) -> i32 {
         self.turn
     }
+}
 
-    fn num_to_letter(num: &usize) -> Result<String, &'static str> {
-        match num {
-            0 => Ok(String::from("A")),
-            1 => Ok(String::from("B")),
-            2 => Ok(String::from("C")),
-            3 => Ok(String::from("D")),
-            4 => Ok(String::from("E")),
-            5 => Ok(String::from("F")),
-            6 => Ok(String::from("G")),
-            7 => Ok(String::from("H")),
-            8 => Ok(String::from("I")),
-            9 => Ok(String::from("J")),
-            _ => Err("Bad argument to num_to_letter()"),
-        }
+fn num_to_letter(num: &usize) -> Result<String, &'static str> {
+    match num {
+        0 => Ok(String::from("A")),
+        1 => Ok(String::from("B")),
+        2 => Ok(String::from("C")),
+        3 => Ok(String::from("D")),
+        4 => Ok(String::from("E")),
+        5 => Ok(String::from("F")),
+        6 => Ok(String::from("G")),
+        7 => Ok(String::from("H")),
+        8 => Ok(String::from("I")),
+        9 => Ok(String::from("J")),
+        _ => Err("Bad argument to num_to_letter()"),
     }
+}
 
-    fn letter_to_num(str: &str) -> Result<i32, &'static str> {
-        match str {
-            "A" => Ok(0),
-            "B" => Ok(1),
-            "C" => Ok(2),
-            "D" => Ok(3),
-            "E" => Ok(4),
-            "F" => Ok(5),
-            "G" => Ok(6),
-            "H" => Ok(7),
-            "I" => Ok(8),
-            "J" => Ok(9),
-            _ => Err("Bad argument to letter_to_num()"),
-        }
+fn letter_to_num(str: &str) -> Result<i32, &'static str> {
+    match str {
+        "A" => Ok(0),
+        "B" => Ok(1),
+        "C" => Ok(2),
+        "D" => Ok(3),
+        "E" => Ok(4),
+        "F" => Ok(5),
+        "G" => Ok(6),
+        "H" => Ok(7),
+        "I" => Ok(8),
+        "J" => Ok(9),
+        _ => Err("Bad argument to letter_to_num()"),
     }
 }
