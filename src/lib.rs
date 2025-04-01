@@ -75,11 +75,11 @@ impl BattleShip {
             for j in 0..self.ship_board[i].len() {
                 result = format!("{result}{} ", self.guess_board[i][j]);
             }
-            result = format!("{result} ");
+            result = format!("{result}   ");
             for k in 0..self.ship_board[i].len() {
                 result = format!("{result}{} ", self.ship_board[i][k]);
             }
-            result = format!("{result} {}\n", num_to_letter(&i).unwrap());
+            result = format!("{result}{}\n", num_to_letter(&i).unwrap());
         }
         result = format!("{result}X = hit\tO = miss           Your ships\n");
 

@@ -8,18 +8,16 @@ use crate::{BattleShip, Coordinate, letter_to_num};
 pub fn initialize_server(address: &str, player1: &mut BattleShip, player2: &mut BattleShip) {
     let listener = TcpListener::bind(address).expect("Failed to bind");
 
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                println!("Game initiated");
-                handle_client(stream, player1, player2);
-            }
-            Err(_) => panic!(),
+    match listener.accept() {
+        Ok((stream, _)) => {
+            println!("Game initiated");
+            handle_server(stream, player1, player2);
         }
+        Err(_) => panic!(),
     }
 }
 
-fn handle_client(stream: TcpStream, player1: &mut BattleShip, player2: &mut BattleShip) {
+fn handle_server(stream: TcpStream, player1: &mut BattleShip, player2: &mut BattleShip) {
     let mut reader = BufReader::new(stream.try_clone().expect("Failed to clone stream"));
     let mut writer = stream.try_clone().expect("Failed to clone stream");
 
@@ -34,7 +32,7 @@ fn handle_client(stream: TcpStream, player1: &mut BattleShip, player2: &mut Batt
         let ascii_uppercase = coordinates.to_ascii_uppercase();
         let coordinates: Vec<&str> = ascii_uppercase
             .trim()
-            .split(&['-', ',', ' ', ':'][..])
+            .split(&['-', ',', ':'][..])
             .map(|coord| coord.trim())
             .collect();
         let coordinates = Coordinate::new(coordinates[0], coordinates[1]);
@@ -53,7 +51,7 @@ fn handle_client(stream: TcpStream, player1: &mut BattleShip, player2: &mut Batt
 
     println!("The other player is placing their ships...");
 
-    write!(writer, "{}", player2.get_ships_left()).unwrap();
+    writeln!(writer, "{}", player2.get_ships_left()).unwrap();
     while player2.get_ships_left() > 0 {
         write!(writer, "{}", player2.print_ship_board()).unwrap();
         writeln!(
@@ -69,7 +67,7 @@ fn handle_client(stream: TcpStream, player1: &mut BattleShip, player2: &mut Batt
         let ascii_uppercase = coordinates.to_ascii_uppercase();
         let coordinates: Vec<&str> = ascii_uppercase
             .trim()
-            .split(&['-', ',', ' ', ':'][..])
+            .split(&['-', ',', ':'][..])
             .map(|coord| coord.trim())
             .collect();
         let coordinates = Coordinate::new(coordinates[0], coordinates[1]);
@@ -81,6 +79,8 @@ fn handle_client(stream: TcpStream, player1: &mut BattleShip, player2: &mut Batt
                 "Invalid coordinate entered (check if you have that size ship or if something is blocking your way)"
             ).unwrap();
         }
+
+        writeln!(writer, "{}", player2.get_ships_left()).unwrap();
     }
     writeln!(writer, "You've placed all of your ships").unwrap();
     writeln!(writer).unwrap();
